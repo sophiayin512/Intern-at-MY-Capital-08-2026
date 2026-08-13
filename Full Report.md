@@ -103,7 +103,7 @@ Throughout this report, daily IC standard deviation is computed as the sample st
 
 A model with high $IC_{\mathrm{mean}}$ but low $IR$ may have strong average performance but unstable daily performance. Therefore, I use both IC and IR when comparing configurations.
 
->[!NOTE]
+>
 >In general, the best model should give both high $IC_{\mathrm{mean}}$ and $IR$. The models with high $IC_{\mathrm{mean}}$ but low $IR$ need to be considered cautiously.
 
 ### Model Selection Rule
@@ -134,7 +134,7 @@ m^*
 \operatorname{IR}_m
 $$
 
->[!NOTE]
+>
 >IC is used as the primary performance filter, while IR is used as the tie-breaker among models with near optimal IC.
 
 ---
@@ -227,7 +227,7 @@ Note that `n_estimators` is adjusted by setting the hyperparameter `n_estimators
 - `n_estimators_cap`: the maximum number of boosting rounds allowed during training. When early stopping is used, the effective model size is determined by the best validation iteration rather than by the cap itself.
 
 
-> [!TIP] Effects of Parameters on XGBoost Performance
+>  Effects of Parameters on XGBoost Performance
 > In summary, `n_estimators` controls how long the boosting process continues, while `reg_lambda`, `reg_alpha`, and `gamma` control how conservative the trees are.
 
 <p align="center">
@@ -363,7 +363,7 @@ The profiles also indicate a trade-off between predictive strength and stability
 | Epochs trained | 13 |  |  |
 | Validation IC | **0.21598** | Validation IR | **8.46** |
 
->[!NOTE]
+>
 > ReLU is used in the hidden layers because it is computationally efficient and less prone to vanishing gradients than sigmoid or tanh. The final regression output layer is linear.
 
 MLP indicates that nonlinear transformations of the input features contain useful predictive information, which agrees with the pattern observed in the XGBoost model. Since it does not explicitly model temporal order and its selected baseline with highest IC has a low IR, it is not treated as the main model. Note that the IR of MLP varied greatly from experiment to experiment, as shown in the following figure, so it tends to be unstable. As a result, MLP is primarily treated as a benchmark and as the nonlinear prediction head in hybrid models, such as GRU+MLP and CNN+MLP.
@@ -597,7 +597,7 @@ Z_{\mathrm{attention}}
 \right).
 $$
 
->[!NOTE]
+>
 >Note that self-attention and the feed-forward network have different purposes:
 > - self-attention exchanges information across the eight temporal positions;
 >- the feed-forward network performs a nonlinear transformation within each position.
@@ -664,7 +664,7 @@ h_{\text{pool}}
 \hat{y}.
 $$
 
->[!NOTE]
+>
 >The complete prediction process is:
 >```mermaid
 >flowchart LR
@@ -1313,7 +1313,7 @@ Increasing current and fusion dimensions does not produce a consistent improveme
 
 The $64\times64$ current/fusion configuration produces the highest isolated IC. However, the $32\times96$ and $96\times64$ combinations also perform well. This suggests that a smaller current branch can be compensated by a wider fusion head, and vice versa.
 
->[!NOTE]
+>
 >The heatmaps report the best observed result within each parameter cell. A cell may therefore reflect a different batch size or selected epoch from the final model. The final configuration table applies the **[project-wide model selection rule](#model-selection-rule)** to the complete run-level candidates.
 
 #### Learning Rate and Weight Decay
@@ -1481,7 +1481,7 @@ This correlation measures whether two models tend to perform well and poorly on 
 The selected representative models are summarized below.
 
 
-> [!NOTE]
+> 
 > All representatives use the selected configuration from their respective model families. Table 18 reports the IC and IR from the specific validation runs used to construct the aligned daily-IC series for correlation analysis, so these run-level metrics may differ from the headline results reported earlier.
 
 <p align="center">
@@ -1857,7 +1857,7 @@ The structural experiment is designed as an ablation study rather than a new sea
 
 All structural comparisons use the same fixed internal preprocessing. The independent test period is not used during correlation analysis or structural selection.
 
->[!NOTE]
+>
 >The resulting experimental question is therefore narrowly defined:
 > Can a current-state MLP provide a small, effective correction to a stable temporal Transformer, without replacing the base prediction or introducing an unnecessarily high-capacity fusion mechanism?
 
@@ -2073,7 +2073,7 @@ F05 is the primary candidate because its first-stage performance was within the 
 
 F06 is retained as a robustness candidate because it achieved similar validation IC with a slightly higher IR while using a higher-capacity gate. Comparing F05 and F06 tests whether the result strongly depends on gate capacity or whether a modest gate is already sufficient.
 
->[!NOTE]
+>
 >The remaining configurations are not advanced to multi-seed testing:
 >- F01 is a standalone MLP branch rather than a fusion candidate;
 >- F02 removes the Transformer anchor and shows weaker tail stability;
@@ -2289,7 +2289,7 @@ The final test stage only loads the frozen checkpoint and performs inference ove
 
 ### Validation-to-Test Generalization
 
->[!NOTE]
+>
 >The validation results are averaged across five random seeds as mentioned in the [previous section](#five-seed-confirmation); test results are reported from the final model evaluated on 20 unseen test dates.
 
 Across the validation experiments, the mean IC of the selected F05 architecture was
@@ -2476,7 +2476,7 @@ This is close to its initialized value. The MLP branch therefore acts as a contr
 
 The final test results support the central architectural conclusion of the project:
 
->[!NOTE]
+>
 > A stable Transformer can serve as the primary temporal prediction anchor, while an MLP that learns from the current state can provide additional information through a sample-dependent residual correction with a bounded global scale.
 
 The final Transformer+MLP model achieves
