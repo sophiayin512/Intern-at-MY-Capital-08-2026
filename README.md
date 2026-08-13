@@ -82,4 +82,4 @@ On the independent test set, the final model improved the internal Transformer I
 
 *The underlying data, feature definitions, security identities, source code, and internal interfaces are proprietary and are not disclosed; only anonymized aggregate results and generic model descriptions are reported.*
 
-*A detailed report is presented [here](./Full%20Report.md).*
+*A detailed report is presented [here](Full_Report.pdf).*
