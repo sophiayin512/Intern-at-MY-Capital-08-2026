@@ -82,7 +82,7 @@ The data are divided chronologically before model training. Because high-frequen
 For each evaluated day $d$, IC is computed as the Pearson correlation between true future returns and model predictions:
 
 ```math
-IC_d = \operatorname{Corr}(y_d, \hat{y}_d)
+IC_d = \mathrm{Corr}(y_d, \hat{y}_d)
 ```
 
 The average IC measures overall predictive strength, where $D$ is the number of evaluated dates:
@@ -96,7 +96,7 @@ IC_{\mathrm{mean}} = \frac{1}{D}\sum_{d=1}^{D} IC_d
 IR measures how stable the daily IC values are:
 
 ```math
-IR = \frac{IC_{\mathrm{mean}}}{\operatorname{std}(IC_d)}
+IR = \frac{IC_{\mathrm{mean}}}{\mathrm{std}(IC_d)}
 ```
 
 Throughout this report, daily IC standard deviation is computed as the sample standard deviation across the evaluated dates.
@@ -117,9 +117,9 @@ The project therefore applies a two-stage selection rule that considers both IC 
 =
 \left\{
 m:
-\operatorname{IC}_m
+\mathrm{IC}_m
 \ge
-\operatorname{IC}_{\max}-0.003
+\mathrm{IC}_{\max}-0.003
 \right\}
 ```
 
@@ -131,7 +131,7 @@ The threshold considers models with very similar IC values as candidates and pre
 m^*
 =
 \arg\max_{m\in\mathcal C}
-\operatorname{IR}_m
+\mathrm{IR}_m
 ```
 
 >
@@ -395,7 +395,7 @@ A simplified GRU formulation is:
 ```math
 p_t=\phi(W_p x_t+b_p),
 \qquad
-h_t=\operatorname{GRU}(p_t,h_{t-1}),
+h_t=\mathrm{GRU}(p_t,h_{t-1}),
 \qquad
 \hat{y}=f_{\mathrm{head}}(h_T)
 ```
@@ -541,9 +541,9 @@ V=ZW^V,
 and calculates
 
 ```math
-\operatorname{Attention}(Q,K,V)
+\mathrm{Attention}(Q,K,V)
 =
-\operatorname{softmax}
+\mathrm{softmax}
 \left(
 \frac{QK^{\mathsf T}}{\sqrt{d_k}}
 \right)V
@@ -556,9 +556,9 @@ Then, the attention output is combined with the original representation through 
 ```math
 Z_{\mathrm{attention}}
 =
-\operatorname{LayerNorm}
+\mathrm{LayerNorm}
 \left(
-Z+\operatorname{MultiHeadAttention}(Z)
+Z+\mathrm{MultiHeadAttention}(Z)
 \right),
 \qquad Z_{\mathrm{attention}}\in\mathbb{R}^{8\times d_{\mathrm{model}}}
 ```
@@ -569,7 +569,7 @@ The residual connection preserves the original representation while allowing the
 Each temporal position is then passed independently through the same feed-forward network (FFN), which applies a shared nonlinear transformation to its features:
 
 ```math
-\operatorname{FFN}(z_t)
+\mathrm{FFN}(z_t)
 =
 W_2\sigma(W_1z_t+b_1)+b_2,
 \qquad z_t\in\mathbb{R}^{d_{\mathrm{model}}}
@@ -591,11 +591,11 @@ The feed-forward output is again combined with its input through a residual conn
 Z_{\mathrm{output}}
 =
 
-\operatorname{LayerNorm}
+\mathrm{LayerNorm}
 \left(
 Z_{\mathrm{attention}}
 +
-\operatorname{FFN}(Z_{\mathrm{attention}})
+\mathrm{FFN}(Z_{\mathrm{attention}})
 \right).
 ```
 
@@ -620,7 +620,7 @@ Multiple encoder layers can be stacked:
 ```math
 Z^{(l)}
 =
-\operatorname{EncoderLayer}_l
+\mathrm{EncoderLayer}_l
 \left(
 Z^{(l-1)}
 \right),
@@ -805,10 +805,10 @@ Based on the preceding neural-model experiments, the model is trained using MSE 
 ```math
 \mathcal L
 =
-\operatorname{MSE}(y,\hat{y})
+\mathrm{MSE}(y,\hat{y})
 -
 \lambda_{\mathrm{IC}}
-\operatorname{Corr}(y,\hat{y}),
+\mathrm{Corr}(y,\hat{y}),
 ```
 
 where the selected IC-loss weight is
@@ -996,9 +996,9 @@ The project first retains configurations whose validation IC is within $0.003$ o
 =
 \left\{
 m:
-\operatorname{IC}_m
+\mathrm{IC}_m
 \ge
-\operatorname{IC}_{\max}-0.003
+\mathrm{IC}_{\max}-0.003
 \right\}.
 ```
 
@@ -1045,7 +1045,7 @@ h_{\mathrm{MLP}} = f_{\mathrm{MLP}}(x_t)
 ```
 
 ```math
-h_{\mathrm{GRU}} = \operatorname{GRU}(x_{t-k:t})
+h_{\mathrm{GRU}} = \mathrm{GRU}(x_{t-k:t})
 ```
 
 After processing MLP and GRU separately, the model combines them only after each branch has extracted the information for which it is designed. Their learned representations are concatenated:
@@ -1069,13 +1069,13 @@ Concatenation preserves both the temporal representation and the current-state r
 A standard regression model often minimizes mean squared error:
 
 ```math
-\operatorname{MSE}(y,\hat{y})
+\mathrm{MSE}(y,\hat{y})
 ```
 
 This objective is useful for numerical prediction accuracy, but it is not perfectly aligned with the primary evaluation metric, IC. Recall that Pearson IC measures the cross-sectional correlation between predicted and realized returns:
 
 ```math
-\operatorname{IC}(y,\hat{y}) = \operatorname{Corr}(y,\hat{y})
+\mathrm{IC}(y,\hat{y}) = \mathrm{Corr}(y,\hat{y})
 ```
 
 To make training more sensitive to this evaluation target, the experiments further introduce IC as an auxiliary objective. Note that Pearson IC is **mathematically differentiable**, so it can be used with backpropagation to train neural networks:
@@ -1083,9 +1083,9 @@ To make training more sensitive to this evaluation target, the experiments furth
 ```math
 \mathcal{L}({y,\hat{y}})
 =
-\operatorname{MSE}(y,\hat{y})
+\mathrm{MSE}(y,\hat{y})
 -
-\lambda_{\mathrm{IC}}\operatorname{IC}(y,\hat{y}).
+\lambda_{\mathrm{IC}}\mathrm{IC}(y,\hat{y}).
 ```
 
 Here, the hyperparameter $\lambda_{\mathrm{IC}}$ controls the trade-off between the two objectives.
@@ -1441,7 +1441,7 @@ Recall that for model $m$ on validation date $t$, the daily cross-sectional Pear
 ```math
 IC_{m,t}
 =
-\operatorname{Corr}_i
+\mathrm{Corr}_i
 \left(
 \hat{y}^{(m)}_{i,t},
 y_{i,t}
@@ -1463,7 +1463,7 @@ The first complementarity diagnostic calculates the correlation between the dail
 ```math
 r_{m,k}
 =
-\operatorname{Corr}_t
+\mathrm{Corr}_t
 \left(
 IC_{m,t},
 IC_{k,t}
@@ -1541,7 +1541,7 @@ Because this is a single-variable linear regression with an intercept,
 ```math
 R_m^2
 =
-\operatorname{Corr}_t
+\mathrm{Corr}_t
 \left(
 IC_{m,t},
 IC_{T,t}
@@ -1583,7 +1583,7 @@ The residual series can also be compared across candidate models:
 ```math
 \rho^{\mathrm{res}}_{m,k}
 =
-\operatorname{Corr}_t
+\mathrm{Corr}_t
 \left(
 \varepsilon_{m,t},
 \varepsilon_{k,t}
@@ -1814,7 +1814,7 @@ The training objective combines prediction error (MSE) with batch-level Pearson 
 \mathcal{L}
 =
 (1-\lambda_{\mathrm{IC}})
-\operatorname{MSE}
+\mathrm{MSE}
 \left(
 \hat{y},y
 \right)
@@ -1822,7 +1822,7 @@ The training objective combines prediction error (MSE) with batch-level Pearson 
 \lambda_{\mathrm{IC}}
 \left(
 1-
-\operatorname{Corr}
+\mathrm{Corr}
 \left(
 \hat{y},y
 \right)
