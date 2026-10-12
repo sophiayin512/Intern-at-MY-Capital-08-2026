@@ -10,15 +10,15 @@ The project evaluates linear baselines, a tree-based model, standalone neural ne
 
 Given an anonymized input representation
 
-$$
+```math
 x_{i,t}\in\mathbb{R}^{d_{\mathrm{in}}},
-$$
+```
 
 the objective is to learn
 
-$$
+```math
 \hat{y}_{i,t}=f_{\theta}(x_{i,t}),
-$$
+```
 
 where $\hat{y}_{i,t}$ represents a model-generated predictive signal.
 
@@ -81,23 +81,23 @@ The data are divided chronologically before model training. Because high-frequen
 
 For each evaluated day $d$, IC is computed as the Pearson correlation between true future returns and model predictions:
 
-$$
+```math
 IC_d = \operatorname{Corr}(y_d, \hat{y}_d)
-$$
+```
 
 The average IC measures overall predictive strength, where $D$ is the number of evaluated dates:
 
-$$
+```math
 IC_{\mathrm{mean}} = \frac{1}{D}\sum_{d=1}^{D} IC_d
-$$
+```
 
 *In this report, the term "IC" refers to $IC_{\mathrm{mean}}$ unless otherwise stated.*
 
 IR measures how stable the daily IC values are:
 
-$$
+```math
 IR = \frac{IC_{\mathrm{mean}}}{\operatorname{std}(IC_d)}
-$$
+```
 
 Throughout this report, daily IC standard deviation is computed as the sample standard deviation across the evaluated dates.
 
@@ -112,7 +112,7 @@ As explained previously, selecting only the model with the highest IC may choose
 
 The project therefore applies a two-stage selection rule that considers both IC and IR. It first retains configurations whose IC is within 0.003 of the maximum observed IC:
 
-$$
+```math
 \mathcal C
 =
 \left\{
@@ -121,18 +121,18 @@ m:
 \ge
 \operatorname{IC}_{\max}-0.003
 \right\}
-$$
+```
 
 where $m$ indexes the candidate models.
 
 The threshold considers models with very similar IC values as candidates and prevents configurations with relatively low IC from being selected only because of a high IR. Among the selected candidates, the model with the highest IR is chosen as the optimal configuration:
 
-$$
+```math
 m^*
 =
 \arg\max_{m\in\mathcal C}
 \operatorname{IR}_m
-$$
+```
 
 >
 >IC is used as the primary performance filter, while IR is used as the tie-breaker among models with near optimal IC.
@@ -149,14 +149,14 @@ Ridge regression is first used to establish a linear baseline. It applies L2 reg
 
 A simplified Ridge objective is:
 
-$$
+```math
 \arg\min_{\beta}
 \left(
 \|y - X\beta\|_2^2
 +
 \alpha \|\beta\|_2^2
 \right)
-$$
+```
 
 Here, the key hyperparameter is $\alpha$, which controls the strength of regularization. A larger $\alpha$ forces the coefficients to shrink more strongly toward zero, reducing model variance. However, an overly large $\alpha$ may also increase bias.
 
@@ -168,14 +168,14 @@ LASSO regression is introduced as another linear baseline and as an internal fea
 
 A simplified LASSO objective is:
 
-$$
+```math
 \arg\min_{\beta}
 \left(
 \|y-X\beta\|_2^2
 +
 \alpha\|\beta\|_1
 \right).
-$$
+```
 
 Compared with Ridge, LASSO can shrink some coefficients exactly to zero. It is therefore used internally to construct a regularized input representation for the nonlinear models.
 
@@ -200,9 +200,9 @@ The XGBoost experiments focus on two questions:
 
 An XGBoost prediction for sample $i$ is produced by:
 
-$$
+```math
 \hat{y}_i = \sum_{m=1}^{M} f_m(x_i)
-$$
+```
 
 Here, each $f_m$ is a regression tree, and $M$ is the number of trees.
 
@@ -326,11 +326,11 @@ Note that MLP shows a different training pattern from the temporal neural models
 
 A Multilayer Perceptron (MLP) is a neural network that learns nonlinear combinations of input features through fully connected hidden layers. A simplified MLP can be written as:
 
-$$
+```math
 \hat{y}_{i,t}
 =
 W_2\sigma(W_1x_{i,t}+b_1)+b_2,
-$$
+```
 
 where $W_1$ and $W_2$ are trainable weight matrices, $b_1$ and $b_2$ are bias terms, and $\sigma$ is a nonlinear activation function. The hidden layer transforms the original features into a nonlinear representation, which is then mapped to the predicted future return.
 
@@ -386,17 +386,19 @@ A GRU is a recurrent neural network designed to process sequential data. It uses
 The GRU model first projects each input into a learned representation and then processes the sequence recurrently in the following order:
 
 
-$$\text{Input}\rightarrow\text{Projection}\rightarrow\text{GRU sequence modeling}\rightarrow\text{Prediction head}\rightarrow\hat{y}$$
+```math
+\text{Input}\rightarrow\text{Projection}\rightarrow\text{GRU sequence modeling}\rightarrow\text{Prediction head}\rightarrow\hat{y}
+```
 
 A simplified GRU formulation is:
 
-$$
+```math
 p_t=\phi(W_p x_t+b_p),
 \qquad
 h_t=\operatorname{GRU}(p_t,h_{t-1}),
 \qquad
 \hat{y}=f_{\mathrm{head}}(h_T)
-$$
+```
 
 
 Here, $p_t$ is the projected representation of the input at time $t$, and $h_t$ is the hidden state that combines current information with information retained from earlier time steps. After the full sequence is processed, the final hidden state $h_T$ is passed through a prediction head $f_{\mathrm{head}}(\cdot)$ to produce the future return prediction $\hat{y}$.
@@ -443,19 +445,19 @@ Since the input is a one-dimensional time sequence, a 1-D CNN is used as another
 
 To prevent future information from being used when predicting the current target, the model uses **causal convolution**. Hence, the representation at time $t$ is constructed only from observations at $t$ and earlier:
 
-$$
+```math
 z_t
 =
 \phi\left(
 \sum_{j=0}^{k-1} W_j x_{t-j} + b
 \right)
-$$
+```
 
 where $k$ is the convolution window size, $W_j$ represents the filter weights, and $\phi$ is the activation function.
 
 The overall processing pipeline is:
 
-$$
+```math
 \text{Input sequence}
 \rightarrow
 \text{Causal convolution layers}
@@ -465,7 +467,7 @@ $$
 \text{Prediction head}
 \rightarrow
 \hat{y}
-$$
+```
 
 The convolutional layers extract local temporal patterns, while the selected pooling operation combines recent and sequence-level information before the regression head produces the prediction.
 
@@ -512,17 +514,17 @@ The Transformer is tested for modeling short-term temporal information. It uses 
 
 After the internal preprocessing stage, each observation is represented as an 8-step sequence:
 
-$$
+```math
 X\in\mathbb{R}^{8\times d_{\mathrm{in}}}
-$$
+```
 
 Each input vector is first projected into a lower-dimensional hidden representation:
 
-$$
+```math
 z_t
 =
 x_tW_{\mathrm{in}}+b_{\mathrm{in}}+p_t
-$$
+```
 
 where $p_t$ is a learnable positional embedding. Note that positional information is required because self-attention alone does not distinguish earlier observations from more recent ones.
 
@@ -530,28 +532,28 @@ where $p_t$ is a learnable positional embedding. Note that positional informatio
 
 For each encoder layer, self-attention constructs query, key, and value matrices:
 
-$$
+```math
 Q=ZW^Q,\qquad
 K=ZW^K,\qquad
 V=ZW^V,
-$$
+```
 
 and calculates
 
-$$
+```math
 \operatorname{Attention}(Q,K,V)
 =
 \operatorname{softmax}
 \left(
 \frac{QK^{\mathsf T}}{\sqrt{d_k}}
 \right)V
-$$
+```
 
 This allows each temporal position to combine information from the 8-step sequence.
 
 Then, the attention output is combined with the original representation through a residual connection and layer normalization:
 
-$$
+```math
 Z_{\mathrm{attention}}
 =
 \operatorname{LayerNorm}
@@ -559,33 +561,33 @@ Z_{\mathrm{attention}}
 Z+\operatorname{MultiHeadAttention}(Z)
 \right),
 \qquad Z_{\mathrm{attention}}\in\mathbb{R}^{8\times d_{\mathrm{model}}}
-$$
+```
 
 
 The residual connection preserves the original representation while allowing the attention module to add useful temporal information. Layer normalization helps keep the hidden representations numerically stable during training.
 
 Each temporal position is then passed independently through the same feed-forward network (FFN), which applies a shared nonlinear transformation to its features:
 
-$$
+```math
 \operatorname{FFN}(z_t)
 =
 W_2\sigma(W_1z_t+b_1)+b_2,
 \qquad z_t\in\mathbb{R}^{d_{\mathrm{model}}}
-$$
+```
 
 where $\sigma$ is a nonlinear activation function and $z_t$ is the $t$-th row of $Z_{\mathrm{attention}}$, representing the feature vector at temporal position $t$ after self-attention. The feed-forward network first expands the hidden representation and then projects it back to $d_{\mathrm{model}}$ dimensions:
 
-$$
+```math
 d_{\mathrm{model}}
 \longrightarrow
 d_{\text{feedforward}}
 \longrightarrow
 d_{\mathrm{model}}
-$$
+```
 
 The feed-forward output is again combined with its input through a residual connection and layer normalization:
 
-$$
+```math
 Z_{\mathrm{output}}
 =
 
@@ -595,7 +597,7 @@ Z_{\mathrm{attention}}
 +
 \operatorname{FFN}(Z_{\mathrm{attention}})
 \right).
-$$
+```
 
 >
 >Note that self-attention and the feed-forward network have different purposes:
@@ -615,7 +617,7 @@ $$
 
 Multiple encoder layers can be stacked:
 
-$$
+```math
 Z^{(l)}
 =
 \operatorname{EncoderLayer}_l
@@ -624,45 +626,45 @@ Z^{(l-1)}
 \right),
 \qquad
 l=1,\ldots,L.
-$$
+```
 
 where $L$ is the number of Transformer encoder layers.
 
 The sequence shape remains
 
-$$
+```math
 8\times d_{\mathrm{model}}
-$$
+```
 
 throughout the encoder. Increasing the number of encoder layers therefore increases model depth without changing the representation size.
 
 After the final encoder layer, the model still uses 8 hidden vectors to represent each temporal position:
 
-$$
+```math
 Z^{(L)}
 \in
 \mathbb{R}^{8\times d_{\mathrm{model}}}.
-$$
+```
 
 To choose a single representation of an observation, Transformer applies pooling to combine these 8 vectors:
 
-$$
+```math
 Z^{(L)}
 \longrightarrow
 h_{\text{pool}}
 \in
 \mathbb{R}^{d_{\mathrm{model}}}.
-$$
+```
 
 The pooled representation is then passed through a fully connected regression head:
 
-$$
+```math
 h_{\text{pool}}
 \longrightarrow
 \text{head hidden layer}
 \longrightarrow
 \hat{y}.
-$$
+```
 
 >
 >The complete prediction process is:
@@ -679,17 +681,17 @@ $$
 >    A --> B --> C --> D --> E --> F --> G
 >```
 >In dimensional terms, the pipeline is:
->$$
-\underbrace{(8,d_{\mathrm{in}})}_{\text{input sequence}}
-\longrightarrow
-\underbrace{(8,d_{\mathrm{model}})}_{\text{projected sequence}}
-\longrightarrow
-\underbrace{(8,d_{\mathrm{model}})}_{\text{encoder output}}
-\longrightarrow
-\underbrace{d_{\mathrm{model}}}_{\text{pooled representation}}
-\longrightarrow
-\underbrace{1}_{\text{prediction}}
->$$
+> ```math
+> \underbrace{(8,d_{\mathrm{in}})}_{\text{input sequence}}
+> \longrightarrow
+> \underbrace{(8,d_{\mathrm{model}})}_{\text{projected sequence}}
+> \longrightarrow
+> \underbrace{(8,d_{\mathrm{model}})}_{\text{encoder output}}
+> \longrightarrow
+> \underbrace{d_{\mathrm{model}}}_{\text{pooled representation}}
+> \longrightarrow
+> \underbrace{1}_{\text{prediction}}
+> ```
 
 #### Transformer Parameters
 
@@ -710,29 +712,29 @@ $$
 
 For example, let $d_{\mathrm{in}}$ denote the undisclosed dimension of the internally preprocessed input. A selected Transformer may use
 
-$$
+```math
 d_{\mathrm{in}}
 \longrightarrow
 d_{\mathrm{model}}=80
-$$
+```
 
 With four attention heads, each head operates on
 
-$$
+```math
 d_k=\frac{80}{4}=20
-$$
+```
 
 dimensions. Each encoder layer contains a feed-forward transformation
 
-$$
+```math
 80\longrightarrow160\longrightarrow80,
-$$
+```
 
 followed by a regression head
 
-$$
+```math
 h_{\mathrm{pool}}\longrightarrow64\longrightarrow\hat{y}
-$$
+```
 
 The regression output layer is linear. No sigmoid or softmax is applied to the final output.
 
@@ -742,46 +744,46 @@ The regression output layer is linear. No sigmoid or softmax is applied to the f
 
 The Transformer encoder returns one representation for each temporal position:
 
-$$
+```math
 H=[\vec{h_1},\vec{h_2},\ldots,\vec{h_T}].
-$$
+```
 
 Pooling is applied to convert these eight vectors into one sequence-level representation. Here are some pooling methods used during Transformer experiments.
 
 ##### 1. Last Pooling
 
-$$
+```math
 h_{\text{pool}}=h_T
-$$
+```
 
 The final position is used as the sequence representation. Note that although only $h_T$ is selected, it has already incorporated information from the other positions through self-attention.
 
 ##### 2. Mean Pooling
 
-$$
+```math
 h_{\text{pool}}
 =
 \frac{1}{T}\sum_{t=1}^{T}h_t.
-$$
+```
 
 Mean pooling treats all temporal positions equally, but it may dilute information concentrated near the most recent observation.
 
 ##### 3. Last-Mean Pooling
 
-$$
+```math
 h_{\text{pool}}
 =
 \left[
 h_T;
 \frac{1}{T}\sum_{t=1}^{T}h_t
 \right].
-$$
+```
 
 This concatenates the latest contextualized state with the average sequence state. For $d_{\mathrm{model}}=80$, the resulting representation has 160 dimensions.
 
 ##### 4. Attention Pooling
 
-$$
+```math
 w_t
 =
 \frac{\exp(f_{\mathrm{pool}}(h_t))}
@@ -790,7 +792,7 @@ w_t
 h_{\text{pool}}
 =
 \sum_{t=1}^{T}w_t h_t.
-$$
+```
 
 Each $f_{\mathrm{pool}}(h_t)$ here is a neural network and $w_t$ is the resulting softmax weight. Attention pooling learns an additional importance weight for each temporal position. It introduces another learned attention mechanism after the Transformer encoder has already performed self-attention.
 
@@ -800,20 +802,20 @@ Each $f_{\mathrm{pool}}(h_t)$ here is a neural network and $w_t$ is the resultin
 
 Based on the preceding neural-model experiments, the model is trained using MSE with an auxiliary Pearson-correlation objective:
 
-$$
+```math
 \mathcal L
 =
 \operatorname{MSE}(y,\hat{y})
 -
 \lambda_{\mathrm{IC}}
 \operatorname{Corr}(y,\hat{y}),
-$$
+```
 
 where the selected IC-loss weight is
 
-$$
+```math
 \lambda_{\mathrm{IC}}=0.15.
-$$
+```
 
 MSE provides a regression objective, while the auxiliary correlation term makes training more sensitive to the IC-based evaluation metric. Correlation does not replace MSE because using only IC as the loss function tends to make predictions numerically inaccurate and can be unstable across different batch compositions.
 
@@ -989,7 +991,7 @@ To isolate this effect, the fixed internal preprocessing protocol was held const
 
 The project first retains configurations whose validation IC is within $0.003$ of the highest observed IC, as introduced in [previous section](#model-selection-rule):
 
-$$
+```math
 \mathcal C
 =
 \left\{
@@ -998,7 +1000,7 @@ m:
 \ge
 \operatorname{IC}_{\max}-0.003
 \right\}.
-$$
+```
 
 Among these near-optimal candidates, the configuration with the highest IR is selected.
 
@@ -1038,27 +1040,27 @@ The GRU+MLP model treats current-state information and recent temporal informati
 
 Let $x_t$ denote the current feature vector and $x_{t-k:t}$ denote the recent sequence ending at time $t$. The two branches can be summarized as:
 
-$$
+```math
 h_{\mathrm{MLP}} = f_{\mathrm{MLP}}(x_t)
-$$
+```
 
-$$
+```math
 h_{\mathrm{GRU}} = \operatorname{GRU}(x_{t-k:t})
-$$
+```
 
 After processing MLP and GRU separately, the model combines them only after each branch has extracted the information for which it is designed. Their learned representations are concatenated:
 
-$$
+```math
 z = [h_{\mathrm{GRU}}\,;\,h_{\mathrm{MLP}}]
-$$
+```
 
 where $[\,;\,]$ denotes concatenation.
 
 In this way, GRU+MLP retains the MLP's direct access to the current feature space while adding the temporal context captured by GRU. The final prediction is produced by a fully connected fusion network:
 
-$$
+```math
 \hat{y} = f_{\mathrm{fusion}}(z)
-$$
+```
 
 Concatenation preserves both the temporal representation and the current-state representation. The fusion MLP then learns how much weight to place on each source and how their features interact. The predicted future return is therefore generated from a joint representation of recent market dynamics and the current market state.
 
@@ -1066,25 +1068,25 @@ Concatenation preserves both the temporal representation and the current-state r
 
 A standard regression model often minimizes mean squared error:
 
-$$
+```math
 \operatorname{MSE}(y,\hat{y})
-$$
+```
 
 This objective is useful for numerical prediction accuracy, but it is not perfectly aligned with the primary evaluation metric, IC. Recall that Pearson IC measures the cross-sectional correlation between predicted and realized returns:
 
-$$
+```math
 \operatorname{IC}(y,\hat{y}) = \operatorname{Corr}(y,\hat{y})
-$$
+```
 
 To make training more sensitive to this evaluation target, the experiments further introduce IC as an auxiliary objective. Note that Pearson IC is **mathematically differentiable**, so it can be used with backpropagation to train neural networks:
 
-$$
+```math
 \mathcal{L}({y,\hat{y}})
 =
 \operatorname{MSE}(y,\hat{y})
 -
 \lambda_{\mathrm{IC}}\operatorname{IC}(y,\hat{y}).
-$$
+```
 
 Here, the hyperparameter $\lambda_{\mathrm{IC}}$ controls the trade-off between the two objectives.
 
@@ -1167,48 +1169,48 @@ CNN+MLP combines a 1-D convolutional branch with a current-state MLP branch. Bot
 
 Let
 
-$$
+```math
 X
 =
 [x_{t-7},\ldots,x_t]
-$$
+```
 
 denote the recent sequence and let $x_t$ denote the current feature vector. Each temporal position is first mapped into a lower-dimensional representation:
 
-$$
+```math
 u_s
 =
 x_sW_{\mathrm{projection}}
 +
 b_{\mathrm{projection}}
-$$
+```
 
 The temporal branch then applies stacked causal convolutions:
 
-$$
+```math
 H_{\mathrm{CNN}}
 =
 f_{\mathrm{CNN}}
 \left(
 u_{t-7:t}
 \right).
-$$
+```
 
 Causal padding ensures that the representation at a temporal position does not use information from later positions. The selected convolutional stack uses kernel sizes
 
-$$
+```math
 [3,3,3]
-$$
+```
 
 and dilation rates
 
-$$
+```math
 [1,2,1].
-$$
+```
 
 Its receptive field is therefore
 
-$$
+```math
 R
 =
 1+
@@ -1218,27 +1220,27 @@ R
 1+2(1+2+1)
 =
 9.
-$$
+```
 
 Since the input sequence contains eight positions, the final convolutional representation can incorporate the entire sequence. Hence, last pooling is applied to obtain the temporal branch output:
 
-$$
+```math
 h_{\mathrm{CNN}}
 =
 H_{\mathrm{CNN},t}.
-$$
+```
 
 The current branch processes only the latest feature vector:
 
-$$
+```math
 h_{\mathrm{current}}
 =
 f_{\mathrm{current}}(x_t).
-$$
+```
 
 The two representations are concatenated and passed through the fusion head:
 
-$$
+```math
 z
 =
 [
@@ -1249,7 +1251,7 @@ h_{\mathrm{current}}
 \hat{y}
 =
 f_{\mathrm{fusion}}(z).
-$$
+```
 
 The CNN branch detects short temporal patterns such as local changes, reversals, and persistent movements, while the current branch analyzes the latest state. The model uses the same combined training objective introduced [here](#loss-function).
 
@@ -1273,17 +1275,17 @@ Across all evaluated experiments, IC and IR have a correlation of approximately 
 
 The highest-IC configuration has
 
-$$
+```math
 \mathrm{IR}=9.80.
-$$
+```
 
 However, based on the [model selection rule](#model-selection-rule), the selected model produces
 
-$$
+```math
 \mathrm{IC}=0.21956,
 \qquad
 \mathrm{IR}=11.98.
-$$
+```
 
 Compared to the model that produces the best IC, the selected model gives up only about $0.00136$ of IC while gaining approximately $2.18$ in IR.
 
@@ -1340,19 +1342,19 @@ At a learning rate of $10^{-4}$, the model produces relatively high IR but lower
 
 The highest IC occurs at
 
-$$
+```math
 \text{learning rate}=5\times10^{-4},
 \qquad
 \text{weight decay}=10^{-4},
-$$
+```
 
 but its IR is lower than that of several configurations with moderate learning rate. The selected model instead uses
 
-$$
+```math
 \text{learning rate}=3\times10^{-4},
 \qquad
 \text{weight decay}=3\times10^{-4}.
-$$
+```
 
 The effect of weight decay depends on the learning rate: strong decay may suppress useful convolutional filters, while weak decay combined with a large learning rate can produce a higher but less stable IC. The heatmap indicates that weight decay mainly modifies the behavior established by the learning rate rather than determining performance independently.
 
@@ -1381,11 +1383,11 @@ The auxiliary IC term is retained from the preceding neural-model experiments, b
 
 A moderate auxiliary weight improves the strongest observed result, but the benefit depends on how much dropout is applied. The global IC peak occurs at
 
-$$
+```math
 \lambda_{\mathrm{IC}}=0.15,
 \qquad
 \text{dropout}=0.10.
-$$
+```
 
 However, dropout $0.05$ produces comparatively strong results across several values of $\lambda_{\mathrm{IC}}$, making it an alternative candidate. Increasing dropout to $0.15$ generally reduces IC, especially when combined with a larger IC-loss weight.
 
@@ -1436,7 +1438,7 @@ After evaluating the neural models individually, I examine whether different mod
 
 Recall that for model $m$ on validation date $t$, the daily cross-sectional Pearson IC is defined as
 
-$$
+```math
 IC_{m,t}
 =
 \operatorname{Corr}_i
@@ -1444,7 +1446,7 @@ IC_{m,t}
 \hat{y}^{(m)}_{i,t},
 y_{i,t}
 \right),
-$$
+```
 
 where $i$ indexes the evaluation samples used to compute cross-sectional IC on date $t$. All selected representative models cover the same 15 validation dates, allowing their daily-IC series to be aligned directly.
 
@@ -1458,7 +1460,7 @@ where $i$ indexes the evaluation samples used to compute cross-sectional IC on d
 
 The first complementarity diagnostic calculates the correlation between the daily-IC series of models $m$ and $k$. The analysis uses representative candidate series retained from the preceding experiments; these are not necessarily the final configuration selected within each model family.
 
-$$
+```math
 r_{m,k}
 =
 \operatorname{Corr}_t
@@ -1466,7 +1468,7 @@ r_{m,k}
 IC_{m,t},
 IC_{k,t}
 \right).
-$$
+```
 
 This correlation measures whether two models tend to perform well and poorly on the same validation dates. A high value indicates similar date-level behavior, while a lower value suggests that the models may respond differently to changing market conditions.
 
@@ -1511,7 +1513,7 @@ Transformer Balanced is used as the fusion anchor because it combines a competit
 
 However, raw correlation can be partly driven by a common market environment. For example, an unusually easy or difficult date may raise or lower the IC of most neural models simultaneously. To measure the incremental information provided by each candidate model beyond the Transformer component, the daily IC series of each candidate model is regressed against the Transformer Balanced daily-IC series:
 
-$$
+```math
 IC_{m,t}
 =
 a_m
@@ -1519,24 +1521,24 @@ a_m
 \beta_m IC_{T,t}
 +
 \varepsilon_{m,t},
-$$
+```
 
 where $T$ denotes the Transformer Balanced model. The fitted component
-$$
+```math
 a_m+\beta_m IC_{T,t}
-$$
+```
 
 represents the regression-predicted daily IC of candidate model $m$ based on the Transformer Balanced daily-IC series. It captures the portion of candidate $m$'s daily IC variation that can be explained by the Transformer component, while the residual term
 
-$$
+```math
 \varepsilon_{m,t}
-$$
+```
 
 represents the remaining component that may contain additional information beyond the Transformer branch.
 
 Because this is a single-variable linear regression with an intercept,
 
-$$
+```math
 R_m^2
 =
 \operatorname{Corr}_t
@@ -1544,27 +1546,27 @@ R_m^2
 IC_{m,t},
 IC_{T,t}
 \right)^2.
-$$
+```
 
 $R_m^2$ measures how much of the candidate model's daily IC variation can be explained by its linear relationship with the Transformer Balanced daily IC series.
 
 The unexplained share is therefore
 
-$$
+```math
 U_m
 =
 1-R_m^2.
-$$
+```
 
 For MLP,
 
-$$
+```math
 U_{\mathrm{MLP}}
 =
 1-0.625^2
 \approx
 0.61,
-$$
+```
 
 This indicates that approximately $61.0\%$ of its date-to-date IC variation is not linearly explained by Transformer Balanced. By comparison, only $6.2\%$ of CNN variation and $9.9\%$ of Transformer Peak variation remain unexplained.
 
@@ -1578,7 +1580,7 @@ This indicates that approximately $61.0\%$ of its date-to-date IC variation is n
 
 The residual series can also be compared across candidate models:
 
-$$
+```math
 \rho^{\mathrm{res}}_{m,k}
 =
 \operatorname{Corr}_t
@@ -1586,7 +1588,7 @@ $$
 \varepsilon_{m,t},
 \varepsilon_{k,t}
 \right).
-$$
+```
 
 The residual correlation $\rho^{\mathrm{res}}_{m,k}$ shows whether two candidates still share similar strong and weak dates after controlling for the variation associated with Transformer Balanced.
 
@@ -1649,7 +1651,7 @@ The proposed fusion model combines two fixed backbone designs without changing t
 
 For sample $i$ on date $t$, the Transformer branch processes the complete sequence
 
-$$
+```math
 X_{i,t}
 =
 \left[
@@ -1659,84 +1661,84 @@ x_{i,t}
 \right]
 \in
 \mathbb{R}^{8\times d_{\mathrm{in}}}
-$$
+```
 
 and produces a temporal representation
 
-$$
+```math
 h^{(T)}_{i,t}
 =
 f_T(X_{i,t}).
-$$
+```
 
 Its original prediction head produces the base score
 
-$$
+```math
 s^{(T)}_{i,t}
 =
 f^{(T)}_{\mathrm{head}}
 \left(
 h^{(T)}_{i,t}
 \right).
-$$
+```
 
 The MLP branch only receives the current position of the sequence:
 
-$$
+```math
 x^{(\mathrm{current})}_{i,t}
 =
 X_{i,t}[-1,:],
-$$
+```
 
 and produces
 
-$$
+```math
 h^{(M)}_{i,t}
 =
 f_M
 \left(
 x^{(\mathrm{current})}_{i,t}
 \right).
-$$
+```
 
 Because the two branches have different representation dimensions, they are projected into a common 64-dimensional fusion space:
 
-$$
+```math
 z^{(T)}_{i,t}
 =
 \phi_T
 \left(
 P_T h^{(T)}_{i,t}
 \right),
-$$
+```
 
-$$
+```math
 z^{(M)}_{i,t}
 =
 \phi_M
 \left(
 P_M h^{(M)}_{i,t}
 \right),
-$$
+```
 
 where each projection includes a linear transformation, normalization, nonlinear activation, and light dropout.
 
 The MLP branch then generates a residual correction:
 
-$$
+```math
 \Delta_{i,t}
 =
 f_{\Delta}
 \left(
 z^{(M)}_{i,t}
 \right).
-$$
+```
 
 The correction is based on the MLP representation. It represents the current-state correction proposed as an addition to the Transformer prediction.
 
 A sample-dependent scalar gate observes both branch representations:
 
-$$
+```math
 g_{i,t}
 =
 \sigma
@@ -1750,7 +1752,7 @@ f_g
 \tau
 }
 \right) ,
-$$
+```
 
 where
 
@@ -1764,15 +1766,15 @@ The gate uses both branches because the usefulness of an MLP correction may depe
 
 A bounded global residual scale is defined as
 
-$$
+```math
 \alpha
 =
 \alpha_{\max}\sigma(a),
-$$
+```
 
 where $a$ is learned and $\alpha_{\max}$ limits the largest possible correction. The final prediction is
 
-$$
+```math
 \boxed{
 \hat{y}_{i,t}
 =
@@ -1782,7 +1784,7 @@ s^{(T)}_{i,t}
 g_{i,t}
 \Delta_{i,t}
 }
-$$
+```
 
 Note that the global residual scale $\alpha$ controls the overall strength of the residual branch, while the sample-specific gate $g_{i,t}$ dynamically controls how much residual correction is applied for each observation.
 
@@ -1808,7 +1810,7 @@ The main structural configuration uses
 
 The training objective combines prediction error (MSE) with batch-level Pearson correlation (auxiliary IC term):
 
-$$
+```math
 \mathcal{L}
 =
 (1-\lambda_{\mathrm{IC}})
@@ -1825,13 +1827,13 @@ $$
 \hat{y},y
 \right)
 \right),
-$$
+```
 
 with
 
-$$
+```math
 \lambda_{\mathrm{IC}}=0.15.
-$$
+```
 
 MSE preserves prediction-scale stability, while the auxiliary IC term aligns optimization more directly with the Pearson-IC evaluation objective.
 
@@ -1869,19 +1871,19 @@ All configurations used the same training set, validation set, sequence length, 
 
 The controlled Transformer baseline is denoted by
 
-$$
+```math
 s^{(T)}_{i,t},
-$$
+```
 
 while the prediction is generated by
 
-$$
+```math
 \hat{y}_{i,t}
 =
 s^{(T)}_{i,t}
 +
 \alpha g_{i,t}\Delta_{i,t},
-$$
+```
 
 as mentioned in the [previous section](#transformer-anchored-gated-residual-fusion-design).
 
@@ -1912,32 +1914,32 @@ The first-stage results support several architectural conclusions.
 
 First, the gated-residual structure is more suitable than unrestricted concatenation. F02 uses a newly initialized prediction head to replace the original Transformer prediction:
 
-$$
+```math
 \hat{y}_{i,t}
 =
 f_{\mathrm{concat}}
 \left(
 [z^{(T)}_{i,t};z^{(M)}_{i,t}]
 \right).
-$$
+```
 
 Although this structure improves mean IC, it no longer protects the stable Transformer output. Its worst daily IC falls to $0.18414$. The fusion head can freely modify the Transformer representation, leading to larger prediction deviations and less stable daily performance compared with the residual-based models.
 
 F03 instead preserves the Transformer prediction and only adds an MLP correction with a bounded global scale:
 
-$$
+```math
 \hat{y}_{i,t}
 =
 s^{(T)}_{i,t}
 +
 \alpha\Delta_{i,t}.
-$$
+```
 
 Its improvement over F00 shows that the Transformer-anchored residual structure itself contributes value even before a sample-dependent gate is introduced.
 
 F05 and F06 extend F03 by learning
 
-$$
+```math
 g_{i,t}
 =
 \sigma
@@ -1948,82 +1950,82 @@ f_g([z^{(T)}_{i,t};z^{(M)}_{i,t}])
 \tau
 }
 \right),
-$$
+```
 
 and applying
 
-$$
+```math
 \hat{y}_{i,t}
 =
 s^{(T)}_{i,t}
 +
 \alpha g_{i,t}\Delta_{i,t}.
-$$
+```
 
 F05 and F06 use the same gating design. Their only main structural difference is the capacity of the gate network:
 
-$$
+```math
 128\rightarrow32\rightarrow1
 \qquad\text{for F05},
-$$
+```
 
 and
 
-$$
+```math
 128\rightarrow64\rightarrow1
 \qquad\text{for F06}.
-$$
+```
 
 Both models produce one scalar gate per sample. F05 exhibits a broadly distributed, non-collapsed gate, with a mean near 0.49 and an interquartile range of approximately 0.36 to 0.64. F06 is more active on average, with a gate mean near 0.85, making the residual branch active for most samples.
 
 The temperature experiments do not support making the gate substantially sharper or smoother. A lower temperature,
 
-$$
+```math
 \tau=0.5,
-$$
+```
 
 pushes the sigmoid output more strongly toward zero or one, while a higher temperature,
 
-$$
+```math
 \tau=2,
-$$
+```
 
 compresses the gate toward intermediate values. Neither F07 nor F08 improves on the standard temperature
 
-$$
+```math
 \tau=1.
-$$
+```
 
 The training-schedule comparison also supports protecting the Transformer baseline during the early stage of fusion training. F09 updates all branches immediately and produces a gate mean near 0.97, indicating that the sigmoid gate saturates close to 1 and provides little suppression of the residual branch. Its lower uplift and weaker worst-date result suggest that updating all branches from the first fusion epoch can destabilize the pretrained Transformer before the residual branch learns an effective correction.
 
 The residual-source comparison shows that F10 remains competitive when
 
-$$
+```math
 \Delta_{i,t}
 =
 f_{\Delta}
 \left(
 [z^{(T)}_{i,t};z^{(M)}_{i,t}]
 \right).
-$$
+```
 
 However, this makes the correction harder to interpret because the residual can reuse information already contained in the Transformer branch. The MLP-only residual used by F05 and F06 can be interpreted clearly: the MLP proposes a current-state correction and the Transformer keeps the temporal anchor.
 
 Finally, F11 shows that fixing
 
-$$
+```math
 \alpha=0.10
-$$
+```
 
 is less effective than learning a bounded residual scale:
 
-$$
+```math
 \alpha
 =
 \alpha_{\max}\sigma(a),
 \qquad
 0<\alpha<\alpha_{\max}.
-$$
+```
 
 The learned scale allows the model to determine the overall strength of the correction while still preventing the MLP branch from destabilizing the base prediction.
 
@@ -2055,13 +2057,13 @@ Four configurations are retained:
 
 F00 is rerun for every seed because the comparison focuses on the same-seed IC improvement over the F00 baseline:
 
-$$
+```math
 \Delta IC_{m,s}
 =
 IC_{m,s}
 -
 IC_{\mathrm{F00},s},
-$$
+```
 
 where $s$ indexes the random seed.
 
@@ -2110,19 +2112,19 @@ The results above show two main groups. The original structural experiments are 
 
 Within the initial controlled structural sweep, F05 achieved
 
-$$
+```math
 IC_{\mathrm{mean}}=0.22178,
 \qquad
 IC_{\mathrm{std}}=0.01871,
 \qquad
 IR=11.85,
-$$
+```
 
 representing an IC improvement of
 
-$$
+```math
 \Delta IC=+0.00236
-$$
+```
 
 over the same-seed F00 Transformer baseline. F06 achieved a similar result, with a slightly higher IR but a gate that was more active on average and closer to saturation. F05 was therefore preferred under the predefined near-tie rule because it used the smaller 32-unit gate and retained a more variable, interpretable gating pattern.
 
@@ -2130,27 +2132,27 @@ over the same-seed F00 Transformer baseline. F06 achieved a similar result, with
 
 After the three-seed architecture-selection stage froze F05, two additional seeds were added to extend the robustness assessment. Across the complete five-seed experiment, F05 achieved
 
-$$
+```math
 \overline{IC}_{\mathrm{F05}}
 =
 0.22703,
-$$
+```
 
 compared with
 
-$$
+```math
 \overline{IC}_{\mathrm{F00}}
 =
 0.22250.
-$$
+```
 
 The mean paired improvement was therefore
 
-$$
+```math
 \overline{\Delta IC}
 =
 0.00453.
-$$
+```
 
 F05 improved on its same-seed F00 baseline in four of the five seeds. The one negative result was small, with an IC difference of approximately -0.00058, indicating that the fusion improvement is robust on average but not guaranteed under every random realization.
 
@@ -2294,23 +2296,23 @@ The final test stage only loads the frozen checkpoint and performs inference ove
 
 Across the validation experiments, the mean IC of the selected F05 architecture was
 
-$$
+```math
 \overline{IC}_{\mathrm{validation}}
 =
 0.22703,
-$$
+```
 
 while the frozen representative checkpoint achieves
 
-$$
+```math
 IC_{\mathrm{test}}
 =
 0.22584.
-$$
+```
 
 The difference is therefore
 
-$$
+```math
 IC_{\mathrm{test}}
 -
 \overline{IC}_{\mathrm{validation}}
@@ -2318,7 +2320,7 @@ IC_{\mathrm{test}}
 0.22584-0.22703
 \approx
 -0.00119.
-$$
+```
 
 The frozen test IC is numerically close to the five-seed validation average, suggesting that the predictive performance observed during validation largely transfers to the previously unseen test period. This comparison is descriptive because the validation value is averaged across five runs, whereas the test result comes from one frozen representative checkpoint.
 
@@ -2336,33 +2338,33 @@ The test result also shows that the final model retains a relatively high IR.
 
 The median test IC,
 
-$$
+```math
 0.22576,
-$$
+```
 
 is almost identical to the mean test IC,
 
-$$
+```math
 0.22584.
-$$
+```
 
 This suggests that the final result is not driven by only a small number of unusually strong test dates.
 
 All 20 test dates produce positive IC. Even the weakest date achieves
 
-$$
+```math
 IC_{\mathrm{worst}}
 =
 0.18505,
-$$
+```
 
 while the strongest date reaches
 
-$$
+```math
 IC_{\mathrm{best}}
 =
 0.26491.
-$$
+```
 
 <p align="center">
   <img src="visualizations/final_result/final_test_ic_distribution.png" width="68%">
@@ -2376,47 +2378,47 @@ $$
 
 The final prediction retains the Transformer score explicitly:
 
-$$
+```math
 \hat{y}_{i,t}
 =
 s^{(T)}_{i,t}
 +
 \alpha g_{i,t}\Delta_{i,t}.
-$$
+```
 
 This allows the Transformer base prediction inside the frozen fusion model to be evaluated separately from the final fused prediction.
 
 Across the 20 test dates, the internal Transformer prediction achieves average
 
-$$
+```math
 IC_{\mathrm{internal\ Transformer}}
 =
 0.21971,
-$$
+```
 
 while the complete Transformer+MLP prediction achieves average
 
-$$
+```math
 IC_{\mathrm{final}}
 =
 0.22584.
-$$
+```
 
 The mean internal uplift is therefore
 
-$$
+```math
 \Delta IC_{\mathrm{internal}}
 =
 0.22584-0.21971
 =
 0.00613.
-$$
+```
 
 The complete gated-residual prediction outperforms the internal Transformer prediction on
 
-$$
+```math
 80\%
-$$
+```
 
 of the test dates.
 
@@ -2436,27 +2438,27 @@ However, this comparison is treated as an internal diagnostic rather than an ind
 
 The mean sample gate across the test period is
 
-$$
+```math
 \overline{g}
 =
 0.68861.
-$$
+```
 
 At the date-average level, the gate remains approximately between $0.65$ and $0.75$. This indicates that the model generally uses the MLP residual correction, but does not apply it at its maximum possible strength.
 
 No test date exhibits substantial gate collapse toward either extreme (0 or 1):
 
-$$
+```math
 g_{i,t}\approx0
 \qquad\text{(low-gate collapse: residual correction suppressed)}
-$$
+```
 
 would generally suppress the MLP correction, while
 
-$$
+```math
 g_{i,t}\approx1
 \qquad\text{(high-gate collapse: residual correction almost always active)}
-$$
+```
 
 would make the residual correction active for almost every sample.
 
@@ -2464,11 +2466,11 @@ Both the low-gate collapse rate and the high-gate collapse rate are $0\%$ across
 
 The learned residual scale remains small:
 
-$$
+```math
 \alpha
 \approx
 0.05410.
-$$
+```
 
 This is close to its initialized value. The MLP branch therefore acts as a controlled correction rather than replacing or freely adjusting the Transformer prediction.
 
@@ -2481,23 +2483,23 @@ The final test results support the central architectural conclusion of the proje
 
 The final Transformer+MLP model achieves
 
-$$
+```math
 \boxed{
 \text{Mean Test Pearson IC}
 =
 0.22584
 }
-$$
+```
 
 and
 
-$$
+```math
 \boxed{
 \text{Test IR}
 =
 11.23.
 }
-$$
+```
 
 Its mean test IC remains close to the preceding five-seed validation result, with positive daily IC on all 20 test dates. The MLP residual improves the internal Transformer prediction on most test dates, while the independent test period remains a one-time out-of-sample evaluation.
 
@@ -2517,13 +2519,13 @@ The GRU+MLP and CNN+MLP experiments further show that temporal and current-state
 
 The final architecture therefore preserves the Transformer prediction and uses MLP to contribute only through a sample-dependent residual with a bounded global scale:
 
-$$
+```math
 \hat{y}_{i,t}
 =
 s^{(T)}_{i,t}
 +
 \alpha g_{i,t}\Delta_{i,t},
-$$
+```
 
 where $s^{(T)}_{i,t}$ is the Transformer prediction, $\Delta_{i,t}$ is the correction produced by the MLP branch, $g_{i,t}\in(0,1)$ is a learned sample-dependent gate, and $\alpha$ controls the learned global residual strength within the bound $\alpha_{\max}$.
 
